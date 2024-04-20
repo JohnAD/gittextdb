@@ -7,7 +7,7 @@ A document-oriented local filesystem database that supports git tracking.
 This is a local filesystem database with the following goals:
 
  - Git trackable: any git commits should show (via diff or other tools)
-   precisely and predicably what has changed in the database content.
+   precisely and predictably what has changed in the database content.
  - human readable: even if the database files are NOT meant to be human
    writable, they should be reasonably human readable.
  - document-oriented: this is not a relational database and must fully
@@ -27,13 +27,13 @@ Not goals:
  - automatic backups: it is fully expected that off-site "backups" are
    invoked using the standard git commit & push mechanism.
  - security: a side effect of the "no server" goal, the only security
-   mechanishm is via the filesystem access rights. That is it.
+   mechanism is via the filesystem access rights. That is it.
 
-## Document Database Pricipals
+## Document Database Principals
 
 While the relational-database industry has a lot academic and public
 understanding, the document-database industry is sadly lacking. So the
-following notes describe the philisophical expectations of this
+following notes describe the philosophical expectations of this
 database's use and role.
 
 ### Read vs Write Scaling
@@ -67,7 +67,7 @@ truth will:
 1. Update the single document AND the "reflected" documents immediately as a
    single almost-atomic operation.
 2. A later "batch" operation will update any documents with the cache copies
-   of the truth. This might be a few minutes later; or days later.
+   of the truth. This might be a few seconds later; or days later.
 
 Reflections of truth are computationally expensive and should be used with
 care.
