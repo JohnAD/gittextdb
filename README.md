@@ -68,19 +68,58 @@ truth will:
    single almost-atomic operation.
 2. A later "batch" operation will update any documents with the cache copies
    of the truth. This might be a few seconds later; or days later.
+3. A document not only must store any reflections it needs, but must also store
+   the document ids that reflect it's own truth. 
 
-Reflections of truth are computationally expensive and should be used with
-care.
+In general "reflections" of truth are computationally expensive and should be used
+with care.
 
-### repeated "searches" are a sign of design failure
+### Repeated "searches" are a sign of design failure
 
-A generic search through all the fields of a Collection is generally
-discouraged.
+A generic search through all the documents of a Collection is generally
+discouraged; except for occasional diagnostic queries.
 
-For example, if a PlantHarvest collection includes quantities harvested each 
+For an example, if a PlantHarvest collection includes quantities harvested each 
 season. Searching for the "top 100 biggest seasons" would certainly work.
 But, if this is a common query, it is much better to build a "TopSeasons"
-collection that has little truth, but contains a reflection/cache of the
+collection that has little truth, but contains a sorted reflection/cache of the
 documents. This increases the "cost" of writing to PlantHarvest, but turns
 the later query into a single document read.
 
+## Example Document
+
+The following is an example of what a document could look like:
+
+```
+id = Plant\01HVYS0MR2CZJZ1JNRP5NSD1SQ
+truth = {
+  name = "Yellow Corn"
+  species = "Zea mays"
+  edible = true
+  output_name = "ears"
+  measure_name = reflection\Measures\01HVYSSY6W062GQEBXVZ3P4XBW
+  regions_grown = [
+    cache\GrowthRegions\01HVYSA9Y5X6J0AH2Q8ZVHDHC5
+    cache\GrowthRegions\01HVYSDYHZVRSTW33G2V7N31Q6
+  ]
+}
+reflections = {
+  reflection\Measures\01HVYSSY6W062GQEBXVZ3P4XBW = {
+    en: "bushels"
+  }
+}
+reflected_by = [
+  CurrentYearHarvest\01HVYSDK5JCC484DPVR8KTYA62
+  CurrentYearHarvest\01HVYSEEFGETVZM9XGCA49K21D
+]
+cache = {
+  GrowthRegions\01HVYSA9Y5X6J0AH2Q8ZVHDHC5 = {
+    name = "United States Midwest"
+    type = "temperate"
+  }
+  GrowthRegions\01HVYSDYHZVRSTW33G2V7N31Q6 = {
+    name = "Mexico Sinaloa"
+    type = "temperate"
+  }
+}
+```
