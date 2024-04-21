@@ -61,6 +61,9 @@ contains:
  - cache: data in the document that is "eventually correct" copies of the
    truth in other documents.
 
+Neither "reflection" or "cache" need to be all of the truth. They can be
+limited segments of it per the schema.
+
 In terms of this database, this means that writing to a single document's
 truth will:
 
@@ -79,11 +82,11 @@ with care.
 A generic search through all the documents of a Collection is generally
 discouraged; except for occasional diagnostic queries.
 
-For an example, if a PlantHarvest collection includes quantities harvested each 
+For an example, if a Plant_Harvest collection includes quantities harvested each 
 season. Searching for the "top 100 biggest seasons" would certainly work.
-But, if this is a common query, it is much better to build a "TopSeasons"
-collection that has little truth, but contains a sorted reflection/cache of the
-documents. This increases the "cost" of writing to PlantHarvest, but turns
+But, if this is a common query, it is much better to build a "Top_Seasons"
+collection that contains a sorted list with reflection/cache of the
+documents. This increases the "cost" of writing to Plant_Harvest, but turns
 the later query into a single document read.
 
 ## Example Document
@@ -96,30 +99,31 @@ truth = {
   name = "Yellow Corn"
   species = "Zea mays"
   edible = true
-  output_name = "ears"
-  measure_name = reflection\Measures\01HVYSSY6W062GQEBXVZ3P4XBW
+  output_name = "bushels"
+  todays_price = reflection\Pricing\01HVYSSY6W062GQEBXVZ3P4XBW
   regions_grown = [
-    cache\GrowthRegions\01HVYSA9Y5X6J0AH2Q8ZVHDHC5
-    cache\GrowthRegions\01HVYSDYHZVRSTW33G2V7N31Q6
+    cache\Growth_Regions\01HVYSA9Y5X6J0AH2Q8ZVHDHC5
+    cache\Growth_Regions\01HVYSDYHZVRSTW33G2V7N31Q6
   ]
 }
 reflections = {
-  reflection\Measures\01HVYSSY6W062GQEBXVZ3P4XBW = {
-    en: "bushels"
+  reflection\Pricing\01HVYSSY6W062GQEBXVZ3P4XBW = {
+    usd: 9.2397
+    mxn: 158.00
   }
 }
 reflected_by = [
-  CurrentYearHarvest\01HVYSDK5JCC484DPVR8KTYA62
-  CurrentYearHarvest\01HVYSEEFGETVZM9XGCA49K21D
+  Current_Year_Harvest\01HVYSDK5JCC484DPVR8KTYA62
+  Current_Year_Harvest\01HVYSEEFGETVZM9XGCA49K21D
 ]
 cache = {
-  GrowthRegions\01HVYSA9Y5X6J0AH2Q8ZVHDHC5 = {
+  Growth_Regions\01HVYSA9Y5X6J0AH2Q8ZVHDHC5 = {
     name = "United States Midwest"
-    type = "temperate"
+    zone = "temperate"
   }
-  GrowthRegions\01HVYSDYHZVRSTW33G2V7N31Q6 = {
+  Growth_Regions\01HVYSDYHZVRSTW33G2V7N31Q6 = {
     name = "Mexico Sinaloa"
-    type = "temperate"
+    zone = "temperate"
   }
 }
 ```
