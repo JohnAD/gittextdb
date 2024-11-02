@@ -19,6 +19,9 @@ This is a local filesystem database with the following goals:
    filesystem, it should be perfectly safe for multiple unconnected programs
    to read/write to the same database.
 
+And, added as of Oct 2024:
+
+ - supports existing industry standard for data storage.
 
 Not goals:
 
@@ -56,13 +59,13 @@ contains:
 
  - truth: data in the document that is the _sole_ _source_ of truth about the
    individual target.
- - reflection: data in the document that is a almost-live copy of the truth in
+ - reflection: data in the document that is a live copy of the truth in
    other documents.
  - cache: data in the document that is "eventually correct" copies of the
    truth in other documents.
 
 Neither "reflection" or "cache" need to be all of the truth. They can be
-limited segments of it per the schema.
+limited subsets of it per the schema.
 
 In terms of this database, this means that writing to a single document's
 truth will:
@@ -93,37 +96,82 @@ the later query into a single document read.
 
 The following is an example of what a document could look like:
 
-```
-id = Plant\01HVYS0MR2CZJZ1JNRP5NSD1SQ
-truth = {
-  name = "Yellow Corn"
-  species = "Zea mays"
-  edible = true
-  output_name = "bushels"
-  todays_price = reflection\Pricing\01HVYSSY6W062GQEBXVZ3P4XBW
-  regions_grown = [
-    cache\Growth_Regions\01HVYSA9Y5X6J0AH2Q8ZVHDHC5
-    cache\Growth_Regions\01HVYSDYHZVRSTW33G2V7N31Q6
-  ]
-}
-reflections = {
-  reflection\Pricing\01HVYSSY6W062GQEBXVZ3P4XBW = {
-    usd: 9.2397
-    mxn: 158.00
-  }
-}
-reflected_by = [
-  Current_Year_Harvest\01HVYSDK5JCC484DPVR8KTYA62
-  Current_Year_Harvest\01HVYSEEFGETVZM9XGCA49K21D
-]
-cache = {
-  Growth_Regions\01HVYSA9Y5X6J0AH2Q8ZVHDHC5 = {
-    name = "United States Midwest"
-    zone = "temperate"
-  }
-  Growth_Regions\01HVYSDYHZVRSTW33G2V7N31Q6 = {
-    name = "Mexico Sinaloa"
-    zone = "temperate"
-  }
+`{dbdir}/Plant/01HVYS0MR2CZJZ1JNRP5NSD1SQ.JSON`
+
+```json
+{
+  "_id": "Plant/01HVYS0MR2CZJZ1JNRP5NSD1SQ",
+  "_ver": "2024-10-22/01HVYS0MR2CZJZ1JNRP5NSD1JJ",
+  "current_price": "mirror/Pricing/01HVYSSY6W062GQEBXVZ3P4XBW",
+  "edible": true,
+  "name": "Yellow Corn",
+  "output_name": "bushels",
+  "regions_grown": [
+    "cache/Growth_Regions/01HVYSA9Y5X6J0AH2Q8ZVHDHC5",
+    "cache/Growth_Regions/01HVYSDYHZVRSTW33G2V7N31Q6"
+  ],
+  "species": "Zea mays"
 }
 ```
+
+`{dbdir}/Plant/__cache/Growth_Regions/summary_01HVYSA9Y5X6J0AH2Q8ZVHDHC5.JSON`
+```json
+{
+   "_ver": "2024-10-22/01HVYS0MR2CZJZ1JNRP5NS9999",
+  "name": "United States Midwest",
+  "zone": "temperate"
+}
+```
+
+And, defining one of the above objects, the `schema` for the `Plant` collection:
+
+`{dir}/Plant.schema.json`
+
+```json
+{
+   "title": "Plant",
+   "description": "Each plant used in the agricultural catalog",
+   "type": "object",
+   "properties": {
+      "_id": "string",
+      "_ver": "string",
+      "current_price": {
+         "description": "daily market price reference",
+         "type": "string",
+         "ref_type": "mirror"
+      },
+      "edible": {
+         "description": "daily market price reference",
+         "type": "boolean"
+      },
+      "name": {
+         "description": "common name",
+         "type": "string"
+      },
+      "output_name": {
+         "description": "qty unit of sale",
+         "type": "string"
+      },
+      "regions_grown": {
+         "description": "list of geographic region references of where the plant is grown",
+         "type": "array",
+         "order": "sorted",
+         "items": {
+            "type": "string",
+            "ref_type": "reflect"
+         }
+      },
+      "species": {
+         "description": "the scientific species name",
+         "type": "string"
+      }
+   },
+   "required": [
+      "edible",
+      "name",
+      "species"
+   ]
+}
+```
+
+This schema follows [https://json-schema.org/](https://json-schema.org/) as a custom schema.
